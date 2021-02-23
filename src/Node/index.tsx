@@ -19,8 +19,29 @@ export default class Node {
     this.parent = parent;
   }
 
+  draw(p5: p5Types) {
+    p5.push();
+    p5.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+    // 画边框和name
+    p5.rectMode(p5.CENTER);
+    p5.rect(0, 0, this.width, this.height);
+    p5.textAlign(p5.CENTER, p5.CENTER);
+    p5.text(this.name, 0, 0);
+
+    p5.pop();
+
+    // 画出和子节点的连线
+    this.drawLines(p5);
+
+    this.children.forEach((child) => {
+      child.draw(p5);
+    });
+  }
+
   drawLines(p5: p5Types) {
-    if (!this.children || this.children.length === 0) return;
+    if (this.children.length === 0) return;
+
     p5.line(
       this.x + this.width / 2,
       this.y + this.height,
@@ -47,23 +68,5 @@ export default class Node {
       child.x + child.width / 2,
       child.y
     );
-  }
-
-  draw(p5: p5Types) {
-    p5.push();
-    p5.translate(this.x + this.width / 2, this.y + this.height / 2);
-    p5.rectMode(p5.CENTER);
-    p5.rect(0, 0, this.width, this.height);
-
-    p5.textAlign(p5.CENTER, p5.CENTER);
-    p5.text(this.name, 0, 0);
-
-    p5.pop();
-
-    this.drawLines(p5);
-
-    this.children.forEach((child) => {
-      child.draw(p5);
-    });
   }
 }
