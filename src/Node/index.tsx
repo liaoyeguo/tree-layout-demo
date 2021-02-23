@@ -1,8 +1,5 @@
 import p5Types from "p5";
 
-const PADDING = 20;
-const FONT_SIZE = 12;
-
 export default class Node {
   public name: string;
   public x: number = 0;
