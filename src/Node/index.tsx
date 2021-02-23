@@ -15,7 +15,7 @@ export default class Node {
   constructor(name: string, parent?: Node) {
     this.name = name;
     this.width = 70;
-    this.height = FONT_SIZE + PADDING * 2;
+    this.height = 52;
     this.parent = parent;
   }
 

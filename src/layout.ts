@@ -243,7 +243,7 @@ const layoutX = (
   };
   const preTravel = (node: INode, accModfiy: number = 0) => {
     if (accModfiy) node.x += accModfiy;
-    console.log(node.name, node.x);
+    console.log(node.name, node.height);
     node.children.forEach((child) =>
       preTravel(child, modifies.get(node)! + accModfiy)
     );
