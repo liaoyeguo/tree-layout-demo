@@ -81,100 +81,15 @@ const root: INodeConfig = {
     },
   ],
 };
-// const root = {
-//   name: "lv1-1",
-//   children: [
-//     {
-//       name: "lv2-1",
-//       children: [
-//         {
-//           name: "lv3-1",
-//         },
-//         {
-//           name: "lv3-2",
-//           children: [
-//             {
-//               name: "lv4-1",
-//             },
-//             {
-//               name: "lv4-2",
-//               children: [
-//                 {
-//                   name: "lv5-1",
-//                 },
-//                 {
-//                   name: "lv5-2",
-//                   children: [
-//                     {
-//                       name: "lv6-1",
-//                     },
-//                     {
-//                       name: "lv6-2",
-//                     },
-//                   ],
-//                 },
-//               ],
-//             },
-//           ],
-//         },
-//       ],
-//     },
-//     {
-//       name: "lv2-2",
-//       children: [
-//         {
-//           name: "lv3-3",
-//         },
-//       ],
-//     },
-//     {
-//       name: "lv2-3",
-//       children: [
-//         {
-//           name: "lv3-4",
-//         },
-//         {
-//           name: "lv3-5",
-//           children: [
-//             {
-//               name: "lv4-3",
-//               children: [
-//                 {
-//                   name: "lv5-3",
-//                   children: [
-//                     {
-//                       name: "lv6-3",
-//                     },
-//                     {
-//                       name: "lv6-4",
-//                     },
-//                   ],
-//                 },
-//                 {
-//                   name: "lv5-4",
-//                 },
-//               ],
-//             },
-//             {
-//               name: "lv4-4",
-//             },
-//           ],
-//         },
-//       ],
-//     },
-//   ],
-// };
 
 interface INodeConfig {
   name: string;
   children?: INodeConfig[];
 }
 
-const createTree = (root: INodeConfig, p5: p5Types, parent?: Node) => {
+const createTree = (root: INodeConfig, parent?: Node) => {
   const node = new Node(root.name, parent);
-  node.children = (root.children || []).map((child) =>
-    createTree(child, p5, node)
-  );
+  node.children = (root.children || []).map((child) => createTree(child, node));
   return node;
 };
 
