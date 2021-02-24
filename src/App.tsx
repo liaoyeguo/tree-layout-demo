@@ -101,7 +101,7 @@ export default class App extends Component {
       window.innerHeight
     ).parent(canvasParentRef);
 
-    this.root = createTree(root, p5);
+    this.root = createTree(root);
   };
 
   draw = (p5: p5Types) => {

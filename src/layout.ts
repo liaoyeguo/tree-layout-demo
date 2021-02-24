@@ -68,9 +68,12 @@ const layoutX = (
 
     let depth = 1;
 
+    let t = [node.name];
     while (child && leftNeighbor) {
       let leftNeighborX = leftNeighbor.x;
       let childX = child.x;
+
+      t.push(child.name);
 
       let i = depth;
       let leftAncestor: INode = leftNeighbor;
@@ -85,6 +88,8 @@ const layoutX = (
       }
 
       const modify = leftNeighborX + leftNeighbor.width + treeGap - childX;
+      // console.log(leftNeighbor.name, child.name, modify);
+      console.log(t.join(" -> "));
 
       if (modify > 0) {
         modifies.set(node, modifies.get(node)! + modify);
@@ -243,7 +248,7 @@ const layoutX = (
   };
   const preTravel = (node: INode, accModfiy: number = 0) => {
     if (accModfiy) node.x += accModfiy;
-    console.log(node.name, node.height);
+    // console.log(node.name, node.x);
     node.children.forEach((child) =>
       preTravel(child, modifies.get(node)! + accModfiy)
     );
