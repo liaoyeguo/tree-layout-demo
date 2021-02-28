@@ -98,7 +98,7 @@ export default class App extends Component {
   setup = (p5: p5Types, canvasParentRef: Element) => {
     p5.createCanvas(
       Math.max(window.innerWidth, 960),
-      window.innerHeight
+      Math.max(window.innerHeight, 1000)
     ).parent(canvasParentRef);
 
     this.root = createTree(root);
@@ -111,7 +111,18 @@ export default class App extends Component {
     p5.noLoop();
   };
 
+  handleMouseClick = (p5: p5Types) => {
+    p5.loop();
+    // this.root.handleClick(p5);
+  };
+
   render() {
-    return <Sketch setup={this.setup as any} draw={this.draw as any} />;
+    return (
+      <Sketch
+        setup={this.setup as any}
+        draw={this.draw as any}
+        mouseClicked={this.handleMouseClick as any}
+      />
+    );
   }
 }

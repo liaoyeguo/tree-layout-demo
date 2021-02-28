@@ -29,8 +29,6 @@ const layoutX = (
   { nodeGap, treeGap }: { nodeGap: number; treeGap: number }
 ) => {
   const modifies = new Map<INode, number>();
-  const rightMostAtLv = new Map<number, INode>();
-  const leftNeighbors = new Map<INode, INode>();
   const threads = new Map<INode, INode>();
 
   const findLeftMostChildAtLv = (node: INode, lv: number): any => {
@@ -39,7 +37,6 @@ const layoutX = (
       const child = node.children[i];
       const res = findLeftMostChildAtLv(child, lv - 1);
       if (res) {
-        // console.log(node.name, res.name);
         return res;
       }
     }
@@ -61,7 +58,11 @@ const layoutX = (
     };
 
     let leftNeighbor: INode | undefined = findLeftSubling(node);
-    if (!leftNeighbor) return;
+    if (!leftNeighbor) {
+      lastLeftMostRef.node = node;
+      lastRightMostRef.node = node;
+      return;
+    }
 
     leftNeighbor = nextNodeOnContour(leftNeighbor, true);
     let child: INode | undefined = nextNodeOnContour(node);
@@ -88,8 +89,6 @@ const layoutX = (
       }
 
       const modify = leftNeighborX + leftNeighbor.width + treeGap - childX;
-      // console.log(leftNeighbor.name, child.name, modify);
-      console.log(t.join(" -> "));
 
       if (modify > 0) {
         modifies.set(node, modifies.get(node)! + modify);
@@ -128,68 +127,6 @@ const layoutX = (
     } else if (leftNeighbor) {
       threads.set(rightMostRef.node, leftNeighbor);
     }
-    // let child = parent;
-
-    // let depth = 0;
-    // while (child) {
-    //   depth++;
-    //   const leftNeighbor = leftNeighbors.get(child);
-    //   if (leftNeighbor) {
-    //     let leftNeighborX = leftNeighbor.x;
-    //     let childX = child.x;
-
-    //     let i = depth;
-    //     let leftAncestor = leftNeighbor;
-    //     let chilAncestor = child;
-    //     while (--i) {
-    //       leftAncestor = leftAncestor.parent!;
-    //       chilAncestor = chilAncestor.parent!;
-    //       leftNeighborX += modifies.get(leftAncestor) || 0;
-    //       childX += modifies.get(chilAncestor) || 0;
-    //     }
-
-    //     const modify = leftNeighborX + leftNeighbor.width + treeGap - childX;
-
-    //     console.log(
-    //       parent.name,
-    //       modify,
-    //       leftNeighbor.name,
-    //       leftNeighborX,
-    //       child.name,
-    //       childX,
-    //       leftAncestor.name,
-    //       chilAncestor.name
-    //     );
-
-    //     if (modify > 0) {
-    //       // console.log(leftNeighbor.name, child.name, modify, leftNeighborX, childX, leftAncestor.x, chilAncestor.x);
-    //       modifies.set(parent, modifies.get(parent)! + modify);
-    //       parent.x += modify;
-
-    //       const commonParent = leftAncestor.parent!;
-    //       const leftAncestorIndex = commonParent?.children.indexOf(
-    //         leftAncestor
-    //       );
-    //       const childIndex = commonParent?.children.indexOf(chilAncestor);
-    //       const nodeBetweenCount = childIndex - leftAncestorIndex - 1;
-
-    //       if (nodeBetweenCount) {
-    //         for (let j = leftAncestorIndex + 1; j < childIndex; j++) {
-    //           const distanceJ =
-    //             (modify / (nodeBetweenCount + 1)) * (j - leftAncestorIndex);
-    //           commonParent.children[j].x += distanceJ;
-
-    //           modifies.set(
-    //             commonParent.children[j],
-    //             modifies.get(commonParent.children[j])! + distanceJ
-    //           );
-    //         }
-    //       }
-    //     }
-    //   }
-
-    //   child = findLeftMostChildAtLv(parent, depth);
-    // }
   };
 
   const setXAndModify = (node: INode) => {
@@ -216,26 +153,15 @@ const layoutX = (
     lastLeftMostRef: any = {},
     lastRightMostRef: any = {}
   ) => {
-    const leftMostRef: any = {};
-    const rightMostRef: any = {};
+    const leftMostRef: any = { node };
+    const rightMostRef: any = { node };
     if (node.children && node.children.length > 0) {
       // 计算子树的位置，此时不考虑其他子树
-      node.children.forEach((child) =>
-        postTravel(child, lv + 1, leftMostRef, rightMostRef)
-      );
-    } else {
-      leftMostRef.node = node;
-      rightMostRef.node = node;
+      node.children.forEach((child) => {
+        postTravel(child, lv + 1, leftMostRef, rightMostRef);
+      });
     }
 
-    // console.log(
-    //   node.name,
-    //   lastLeftMostRef.node?.name,
-    //   lastRightMostRef.node?.name,
-    //   leftMostRef.node?.name,
-    //   rightMostRef.node?.name
-    // );
-    // 设置 node 的 x 和 modify
     setXAndModify(node);
     pushApart(
       node,
@@ -248,7 +174,6 @@ const layoutX = (
   };
   const preTravel = (node: INode, accModfiy: number = 0) => {
     if (accModfiy) node.x += accModfiy;
-    // console.log(node.name, node.x);
     node.children.forEach((child) =>
       preTravel(child, modifies.get(node)! + accModfiy)
     );
