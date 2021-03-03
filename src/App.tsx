@@ -102,27 +102,17 @@ export default class App extends Component {
     ).parent(canvasParentRef);
 
     this.root = createTree(root);
+    layout(this.root);
   };
 
   draw = (p5: p5Types) => {
     p5.background("#eee");
-    layout(this.root!);
+
     this.root!.draw(p5);
     p5.noLoop();
   };
 
-  handleMouseClick = (p5: p5Types) => {
-    p5.loop();
-    // this.root.handleClick(p5);
-  };
-
   render() {
-    return (
-      <Sketch
-        setup={this.setup as any}
-        draw={this.draw as any}
-        mouseClicked={this.handleMouseClick as any}
-      />
-    );
+    return <Sketch setup={this.setup as any} draw={this.draw as any} />;
   }
 }

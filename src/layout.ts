@@ -1,21 +1,22 @@
-interface INode {
-  name: string;
-  parent?: INode;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  children: INode[];
-}
+// interface Node {
+//   name: string;
+//   parent?: Node;
+//   x: number;
+//   y: number;
+//   width: number;
+//   height: number;
+//   children: Node[];
+// }
+import Node from "./Node";
 
-const layoutY = (node: INode, y: number = 0, levelGap: number = 0) => {
+const layoutY = (node: Node, y: number = 0, levelGap: number = 0) => {
   node.y = y;
   node.children.forEach((child) => {
     layoutY(child, y + node.height + levelGap, levelGap);
   });
 };
 
-const findLeftSubling = (node: INode) => {
+const findLeftSubling = (node: Node) => {
   const parent = node.parent;
   if (!parent) return undefined;
 
@@ -25,13 +26,10 @@ const findLeftSubling = (node: INode) => {
 };
 
 const layoutX = (
-  node: INode,
+  node: Node,
   { nodeGap, treeGap }: { nodeGap: number; treeGap: number }
 ) => {
-  const modifies = new Map<INode, number>();
-  const threads = new Map<INode, INode>();
-
-  const findLeftMostChildAtLv = (node: INode, lv: number): any => {
+  const findLeftMostChildAtLv = (node: Node, lv: number): any => {
     if (lv === 0) return node;
     for (let i = 0; i < node.children.length; i++) {
       const child = node.children[i];
@@ -43,21 +41,21 @@ const layoutX = (
   };
 
   const pushApart = (
-    node: INode,
+    node: Node,
     lastLeftMostRef: any,
     lastRightMostRef: any,
     leftMostRef: any,
     rightMostRef: any
   ) => {
-    const nextNodeOnContour = (node: INode, isRight = false) => {
+    const nextNodeOnContour = (node: Node, isRight = false) => {
       if (node.children && node.children.length > 0) {
         return node.children[isRight ? node.children.length - 1 : 0];
       } else {
-        return threads.get(node);
+        return node.thread;
       }
     };
 
-    let leftNeighbor: INode | undefined = findLeftSubling(node);
+    let leftNeighbor: Node | undefined = findLeftSubling(node);
     if (!leftNeighbor) {
       lastLeftMostRef.node = node;
       lastRightMostRef.node = node;
@@ -65,7 +63,7 @@ const layoutX = (
     }
 
     leftNeighbor = nextNodeOnContour(leftNeighbor, true);
-    let child: INode | undefined = nextNodeOnContour(node);
+    let child: Node | undefined = nextNodeOnContour(node);
 
     let depth = 1;
 
@@ -77,21 +75,21 @@ const layoutX = (
       t.push(child.name);
 
       let i = depth;
-      let leftAncestor: INode = leftNeighbor;
-      let chilAncestor: INode = child;
+      let leftAncestor: Node = leftNeighbor;
+      let chilAncestor: Node = child;
 
       while (i-- > 0 && leftAncestor.parent && chilAncestor.parent) {
         leftAncestor = leftAncestor.parent;
         chilAncestor = chilAncestor.parent;
 
-        leftNeighborX += modifies.get(leftAncestor) || 0;
-        childX += modifies.get(chilAncestor) || 0;
+        leftNeighborX += leftAncestor.modify;
+        childX += chilAncestor.modify;
       }
 
       const modify = leftNeighborX + leftNeighbor.width + treeGap - childX;
 
       if (modify > 0) {
-        modifies.set(node, modifies.get(node)! + modify);
+        node.modify += modify;
         node.x += modify;
 
         // apportion
@@ -106,11 +104,7 @@ const layoutX = (
             const distanceJ =
               (modify / (nodeBetweenCount + 1)) * (j - leftAncestorIndex);
             commonParent.children[j].x += distanceJ;
-
-            modifies.set(
-              commonParent.children[j],
-              modifies.get(commonParent.children[j])! + distanceJ
-            );
+            commonParent.children[j].modify += distanceJ;
           }
         }
       }
@@ -121,15 +115,15 @@ const layoutX = (
     }
 
     if (child) {
-      threads.set(lastLeftMostRef.node, child);
+      lastLeftMostRef.node.thread = child;
       lastLeftMostRef.node = leftMostRef.node;
       lastRightMostRef.node = rightMostRef.node;
     } else if (leftNeighbor) {
-      threads.set(rightMostRef.node, leftNeighbor);
+      rightMostRef.node.thread = leftNeighbor;
     }
   };
 
-  const setXAndModify = (node: INode) => {
+  const setXAndModify = (node: Node) => {
     const letfSubling = findLeftSubling(node);
     // 计算 node 节点的位置。
     if (letfSubling) node.x = letfSubling.x + letfSubling.width + nodeGap;
@@ -141,14 +135,12 @@ const layoutX = (
         (node.children[0].x + node.children[node.children.length - 1].x) / 2;
 
       const modify = node.x - mid;
-      modifies.set(node, modify);
+      node.modify = modify;
     }
   };
 
-  const setThread = () => {};
-
   const postTravel = (
-    node: INode,
+    node: Node,
     lv: number,
     lastLeftMostRef: any = {},
     lastRightMostRef: any = {}
@@ -170,13 +162,10 @@ const layoutX = (
       leftMostRef,
       rightMostRef
     );
-    setThread();
   };
-  const preTravel = (node: INode, accModfiy: number = 0) => {
+  const preTravel = (node: Node, accModfiy: number = 0) => {
     if (accModfiy) node.x += accModfiy;
-    node.children.forEach((child) =>
-      preTravel(child, modifies.get(node)! + accModfiy)
-    );
+    node.children.forEach((child) => preTravel(child, node.modify + accModfiy));
   };
 
   postTravel(node, 0);
@@ -185,7 +174,7 @@ const layoutX = (
 };
 
 const layout = (
-  node: INode,
+  node: Node,
   {
     levelGap,
     nodeGap,

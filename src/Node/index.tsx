@@ -9,6 +9,9 @@ export default class Node {
   public children: Node[] = [];
   public parent?: Node;
 
+  public modify = 0;
+  public thread?: Node;
+
   constructor(name: string, parent?: Node) {
     this.name = name;
     this.width = 70;
