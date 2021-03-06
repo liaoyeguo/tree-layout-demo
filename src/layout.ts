@@ -29,17 +29,6 @@ const layoutX = (
   node: Node,
   { nodeGap, treeGap }: { nodeGap: number; treeGap: number }
 ) => {
-  const findLeftMostChildAtLv = (node: Node, lv: number): any => {
-    if (lv === 0) return node;
-    for (let i = 0; i < node.children.length; i++) {
-      const child = node.children[i];
-      const res = findLeftMostChildAtLv(child, lv - 1);
-      if (res) {
-        return res;
-      }
-    }
-  };
-
   const pushApart = (
     node: Node,
     lastLeftMostRef: any,
@@ -57,6 +46,7 @@ const layoutX = (
 
     let leftNeighbor: Node | undefined = findLeftSubling(node);
     if (!leftNeighbor) {
+      // 没有兄弟节点就不需要比较了
       lastLeftMostRef.node = node;
       lastRightMostRef.node = node;
       return;
@@ -123,13 +113,13 @@ const layoutX = (
     }
   };
 
-  const setXAndModify = (node: Node) => {
+  const initXAndModify = (node: Node) => {
     const letfSubling = findLeftSubling(node);
-    // 计算 node 节点的位置。
+    // 计算 x。
     if (letfSubling) node.x = letfSubling.x + letfSubling.width + nodeGap;
     else node.x = node.x || 0;
 
-    // 如果不是叶节点，计算modify
+    // 如果不是叶节点，计算modify。
     if (node.children && node.children.length > 0) {
       const mid =
         (node.children[0].x + node.children[node.children.length - 1].x) / 2;
@@ -154,7 +144,7 @@ const layoutX = (
       });
     }
 
-    setXAndModify(node);
+    initXAndModify(node);
     pushApart(
       node,
       lastLeftMostRef,
