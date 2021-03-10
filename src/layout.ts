@@ -44,39 +44,37 @@ const layoutX = (
       }
     };
 
-    let leftNeighbor: Node | undefined = findLeftSubling(node);
-    if (!leftNeighbor) {
+    let nearestLeftNeighbor: Node | undefined = findLeftSubling(node);
+    if (!nearestLeftNeighbor) {
       // 没有兄弟节点就不需要比较了
       lastLeftMostRef.node = node;
       lastRightMostRef.node = node;
       return;
     }
 
-    leftNeighbor = nextNodeOnContour(leftNeighbor, true);
+    nearestLeftNeighbor = nextNodeOnContour(nearestLeftNeighbor, true);
     let child: Node | undefined = nextNodeOnContour(node);
 
     let depth = 1;
 
-    let t = [node.name];
-    while (child && leftNeighbor) {
-      let leftNeighborX = leftNeighbor.x;
+    while (child && nearestLeftNeighbor) {
+      let nearestLeftNeighborX = nearestLeftNeighbor.x;
       let childX = child.x;
 
-      t.push(child.name);
-
       let i = depth;
-      let leftAncestor: Node = leftNeighbor;
+      let leftAncestor: Node = nearestLeftNeighbor;
       let chilAncestor: Node = child;
 
       while (i-- > 0 && leftAncestor.parent && chilAncestor.parent) {
         leftAncestor = leftAncestor.parent;
         chilAncestor = chilAncestor.parent;
 
-        leftNeighborX += leftAncestor.modify;
+        nearestLeftNeighborX += leftAncestor.modify;
         childX += chilAncestor.modify;
       }
 
-      const modify = leftNeighborX + leftNeighbor.width + treeGap - childX;
+      const modify =
+        nearestLeftNeighborX + nearestLeftNeighbor.width + treeGap - childX;
 
       if (modify > 0) {
         node.modify += modify;
@@ -100,7 +98,7 @@ const layoutX = (
       }
 
       child = nextNodeOnContour(child);
-      leftNeighbor = nextNodeOnContour(leftNeighbor, true);
+      nearestLeftNeighbor = nextNodeOnContour(nearestLeftNeighbor, true);
       depth++;
     }
 
@@ -108,8 +106,8 @@ const layoutX = (
       lastLeftMostRef.node.thread = child;
       lastLeftMostRef.node = leftMostRef.node;
       lastRightMostRef.node = rightMostRef.node;
-    } else if (leftNeighbor) {
-      rightMostRef.node.thread = leftNeighbor;
+    } else if (nearestLeftNeighbor) {
+      rightMostRef.node.thread = nearestLeftNeighbor;
     }
   };
 
@@ -153,9 +151,9 @@ const layoutX = (
       rightMostRef
     );
   };
-  const preTravel = (node: Node, accModfiy: number = 0) => {
-    if (accModfiy) node.x += accModfiy;
-    node.children.forEach((child) => preTravel(child, node.modify + accModfiy));
+  const preTravel = (node: Node, accModify: number = 0) => {
+    if (accModify) node.x += accModify;
+    node.children.forEach((child) => preTravel(child, node.modify + accModify));
   };
 
   postTravel(node, 0);
